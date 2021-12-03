@@ -3,10 +3,10 @@ kind: Pod
 metadata:
   name: flask-pod
   labels:
-    app: flask-helloworld
+    app: flask-service1
 spec:
   containers:
   - name: flask
-    image: digitalocean/flask-helloworld:latest
+    image: bcattaneo/flask-service1:v0
     ports:
     - containerPort: 5000

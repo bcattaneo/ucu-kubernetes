@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: flask-svc
   labels:
-    app: flask-helloworld
+    app: flask-service1
 spec:
   type: LoadBalancer 
   ports:
@@ -11,4 +11,4 @@ spec:
     targetPort: 5000
     protocol: TCP
   selector:
-    app: flask-helloworld
+    app: flask-service1
