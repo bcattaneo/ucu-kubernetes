@@ -1,73 +1,140 @@
 # ucu-kubernetes
 
-Curso "INSTALACIÓN CONFIGURACIÓN Y ADM.DE LINUX"
+Prueba uso de Kubernes con balanceador de carga.
 
-## Construcción imágenes
-Construyo imagen del servicio #1
-cd app
+Veremos todo el flujo para realizar el deploy y escalabilidad de un servicio (API flask).
+
+Curso "INSTALACIÓN CONFIGURACIÓN Y ADM.DE LINUX" / Universidad Católica del Uruguay
+
+## Imágenes de Docker
+En el proceso utilizaremos contenedores de Docker, los cuales enviaremos a Kubernetes para su ejecución.
+
+### Construcción
+Primero debemos construír imagen del servicio #1
+```
+cd service1
 sudo docker build -t flask_service1:v0 .
+```
 
-Pruebo que funciona:
+Podemos corroborar su funcionamiento ejecutándola:
+```
 sudo docker run -p 5000:5000 flask_service1:v0
+```
 
-CREAR CUENTA EN DOCKERHUB, para usar nuestra propia imagen
-https://docs.docker.com/docker-hub/
+### Subir a DockerHub
+Para crear nuestras propias imágenes y realizar deploy de las mismas, debemos crear una cuenta en DockerHub: https://docs.docker.com/docker-hub/
 
-se sube nuestra imagen creada con:
+Listamos las imágenes creadas disponibles:
+```
 sudo docker images
+```
+
+Obteniendo el ID y tags, creamos:
+```
 sudo docker tag <ID imagen> <ID dockerhub>/<nombre repo>:<tag>
-ej: sudo docker tag bc52e14d03ca bcattaneo/flask-service1:v0
+```
+ej: ```sudo docker tag bc52e14d03ca bcattaneo/flask-service1:v0```
+
+Subimos al repositorio:
+```
 sudo docker push <ID dockerhub>/<nombre repo>:<tag>
-ej: sudo docker push bcattaneo/flask-service1:v0
+```
+ej: ```sudo docker push bcattaneo/flask-service1:v0```
 
-# Deployment
-Conectar kubectl con nuestro cluster de digitalocean
-una forma kubectl --kubeconfig=~/.kube/<clustername>-kubeconfig.yaml get nodes
-ej.: kubectl --kubeconfig=/.kube/ucu-kubernetes-kubeconfig.yaml get nodes
-la otra es renombrar <clustername>-kubeconfig.yaml a config
+## Deployment
+  
+### Conexión inicial
+Lo primero que debemos hacer es conectar "kubectl" con nuestro cluster de Kubernetes. En nuestro caso estamos utilizando uno de DigitalOcean.
+  
+Una forma de utilizar la herramienta, es proveer la configuración del cluster en cada comando, por ejemplo:
+```
+kubectl --kubeconfig=~/.kube/<nombre cluster>-kubeconfig.yaml get nodes
+```
+ej: ```kubectl --kubeconfig=/.kube/ucu-kubernetes-kubeconfig.yaml get nodes```
 
-Creamos namespace
+La otra forma, cuando sólo vamos a manejar un cluster, es renombrar <clustername>-kubeconfig.yaml a config. De esta forma se utiliza dicha configuración del cluster en todos los comandos.
+
+Creamos un nuevo namespace para nuestro proyecto:
+```
 kubectl create namespace flask
+```
 
-Listamos namespaces, debería existir "flask" ahora
+Listamos namespaces actuales para corroborar que existe "flask":
+```
 kubectl get namespace
+```
 
-Deploy del pod:
+### Deploy de un pod
+
+El pod es la unidad mínima en Kubernetes.
+  
+Configuramos uno para el servicio utilizando:
+```
 kubectl apply -f flask-pod.yaml -n flask
+```
 
-Listamos pods:
+Listamos los pods actuales, para corroborar que vemos el nuevo:
+```
 kubectl get pod -n flask
-Nota: A los 10 segundos aprox.. debería estar ejecutando
+```
+_Nota: podría demorar entre 10 y 20 segundos en visualizarse el nuevo pod_
 
-Forward del puerto para probar:
+Una forma sencilla de probar el funcionamiento del servicio, es rediregir el puerto del cluster a uno local:
+```
 kubectl port-forward pods/flask-pod -n flask 5000:5000 --address='0.0.0.0'
+```
 
-Deberíamos poder recibir nuevamente el servicio.
+En nuestro entorno de desarrollo deberíamos lograr acceder al servicio en el puerto 5000.
 
-Ahora haremos lo mismo pero con un deploy:
+### Creando un deployment
+  
+Normalmente se pretende manejar todo el ciclo de vida de varios contenedores, crear réplicas de los mismos o bien mantener varios pods en un mismo contexto. Con Kubernetes podemos crear deployments.
+  
+Primero eliminamos el pod individual:
+```
 kubectl delete pod flask-pod -n flask
+```
 
-Se realiza el deploy con:
+Realizamos el deploy del servicio con dos réplicas:
+```
 kubectl apply -f flask-deployment.yaml -n flask
+```
 
-Vemos los deploy con:
+Visualizamos los deployment con el siguiente comando:
+```
 kubectl get deploy -n flask
+```
 
-Para ver cada pod de forma individual:
+Si revisamos los pods, ahora veremos dos:
+```
 kubectl get pod -n flask
+```
 
-Nuevamente, podemos probarla haciendo forward de los puertos:
+Nuevamente probamos el servicio localmente:
+```
 kubectl port-forward deployment/flask-dep -n flask 5000:5000
+```
 
-Levantamos servicio con balanceador:
+### Servicio balanceador
+
+Con Kubernetes es muy sencillo crear un servicio balanceador para nuestro servicio:
+
+```
 kubectl apply -f flask-service.yaml -n flask
+```
 
 Revisamos estado del servicio:
+```
 kubectl -n flask get svc -w
+```
+_Nota: puede tardar unos minutos en iniciarse_
 
-TODO: caso donde cambia la imagen
-
-
+## Conclusiones
+Con unos pocos pasos podemos realizar un deploy de un servicio real, con balanceador, control de carga y muchas otras utilizadades que ya vienen "out-of-the-box". Adicionalmente, el dashboard de Kubernetes incluye muchas utilizadades visuales para el monitoreo de nuestros servicios.
+  
 ## Referencias
 * https://www.digitalocean.com/community/meetup_kits/getting-started-with-containers-and-kubernetes-a-digitalocean-workshop-kit
 * https://github.com/do-community/k8s-intro-meetup-kit.git
+  
+## Licencia
+MIT
