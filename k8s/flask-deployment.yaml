@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ucu-dep
+  labels:
+    app: ucu-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ucu-service
+  template:
+    metadata:
+      labels:
+        app: ucu-service
+    spec:
+      containers:
+      - name: flask
+        image: bcattaneo/ucu-service:v0
+        ports:
+        - containerPort: 5000
