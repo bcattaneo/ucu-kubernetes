@@ -13,12 +13,12 @@ En el proceso utilizaremos contenedores de Docker, los cuales enviaremos a Kuber
 Primero debemos construír imagen del servicio #1
 ```
 cd service1
-sudo docker build -t flask_service1:v0 .
+docker build -t flask_service1:v0 .
 ```
 
 Podemos corroborar su funcionamiento ejecutándola:
 ```
-sudo docker run -p 5000:5000 flask_service1:v0
+docker run -p 5000:5000 flask_service1:v0
 ```
 
 ### Subir a DockerHub
@@ -26,20 +26,20 @@ Para crear nuestras propias imágenes y realizar deploy de las mismas, debemos c
 
 Listamos las imágenes creadas disponibles:
 ```
-sudo docker images
+docker images
 ```
 
 Obteniendo el ID y tags, creamos:
 ```
-sudo docker tag <ID imagen> <ID dockerhub>/<nombre repo>:<tag>
+docker tag <ID imagen> <ID dockerhub>/<nombre repo>:<tag>
 ```
-ej: ```sudo docker tag bc52e14d03ca bcattaneo/flask-service1:v0```
+ej: ```docker tag bc52e14d03ca bcattaneo/flask-service1:v0```
 
 Subimos al repositorio:
 ```
-sudo docker push <ID dockerhub>/<nombre repo>:<tag>
+docker push <ID dockerhub>/<nombre repo>:<tag>
 ```
-ej: ```sudo docker push bcattaneo/flask-service1:v0```
+ej: ```docker push bcattaneo/flask-service1:v0```
 
 ## Deployment
   
@@ -52,7 +52,9 @@ kubectl --kubeconfig=~/.kube/<nombre cluster>-kubeconfig.yaml get nodes
 ```
 ej: ```kubectl --kubeconfig=/.kube/ucu-kubernetes-kubeconfig.yaml get nodes```
 
-La otra forma, cuando sólo vamos a manejar un cluster, es renombrar <clustername>-kubeconfig.yaml a config. De esta forma se utiliza dicha configuración del cluster en todos los comandos.
+La forma recomendada de manejar configuraciones es definir la variable de entorno `KUBECONFIG` apuntando a la ruta de nuestra configuración.
+
+Otra forma, cuando sólo vamos a manejar un cluster, es renombrar <clustername>-kubeconfig.yaml a config. De esta forma se utiliza dicha configuración del cluster en todos los comandos.
 
 Creamos un nuevo namespace para nuestro proyecto:
 ```
