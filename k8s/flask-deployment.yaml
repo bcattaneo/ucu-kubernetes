@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-dep
+  name: ucu-dep
   labels:
-    app: flask-service1
+    app: ucu-service
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: flask-service1
+      app: ucu-service
   template:
     metadata:
       labels:
-        app: flask-service1
+        app: ucu-service
     spec:
       containers:
       - name: flask
-        image: bcattaneo/flask-service1:v0
+        image: bcattaneo/ucu-service:v0
         ports:
         - containerPort: 5000
